@@ -1,9 +1,7 @@
-## Interface: 110005
-## Version: 0.1.0
+## Interface: 110207
+## Version: 1.0.0
 ## Title: WoW BnB
 ## Notes: Share your house with the world!
-## Author: Jeremy-Gstein (Shodo)
-## SavedVariables: WoWBnBDB
+## Author: Jeremy-Gstein
 
-Core.lua
-Options.lua
+WoWBnBCopy.lua

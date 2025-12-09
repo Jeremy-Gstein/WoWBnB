@@ -66,7 +66,7 @@ function WoWBnB:CLEU(...)
 
 	if isDamageEvent and sourceGUID == playerGUID then
 		-- get the link of the spell or the MELEE globalstring
-		local action = spellId and GetSpellLink(spellId) or MELEE
+		local action = spellId and C_Spell.GetSpellLink(spellId) or MELEE
 		print(MSG_DAMAGE:format(action, destName, amount))
 	end
 end
@@ -75,5 +75,5 @@ SLASH_HELLOW1 = "/hw"
 SLASH_HELLOW2 = "/helloworld"
 
 SlashCmdList.HELLOW = function(msg, editBox)
-	InterfaceOptionsFrame_OpenToCategory(WoWBnB.panel_main)
+	Settings.OpenToCategory(WoWBnB.panel_main.name)
 end

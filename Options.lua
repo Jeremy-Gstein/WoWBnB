@@ -16,6 +16,12 @@ local function CreateIcon(icon, width, height, parent)
 	return f
 end
 
+local function RegisterCanvas(frame)
+	local cat = Settings.RegisterCanvasLayoutCategory(frame, frame.name, frame.name);
+	cat.ID = frame.name
+	Settings.RegisterAddOnCategory(cat)
+end
+
 function WoWBnB:CreateCheckbox(option, label, parent, updateFunc)
 	local cb = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
 	cb.Text:SetText(label)
@@ -66,7 +72,7 @@ function WoWBnB:InitializeOptions()
 		EventRegistry:TriggerEvent("WoWBnB.OnReset")
 	end)
 
-	InterfaceOptions_AddCategory(WoWBnB.panel_main)
+	RegisterCanvas(self.panel_main)
 
 	-- sub panel
 	local panel_shroom = CreateFrame("Frame")
@@ -78,7 +84,7 @@ function WoWBnB:InitializeOptions()
 		icon:SetPoint("TOPLEFT", 20, -32*i)
 	end
 
-	InterfaceOptions_AddCategory(panel_shroom)
+	RegisterCanvas(panel_shroom)
 end
 
 function WoWBnB.UpdateIcon(value)
@@ -97,4 +103,3 @@ function WoWBnB:UpdateEvent(value, event)
 		self:UnregisterEvent(event)
 	end
 end
-
