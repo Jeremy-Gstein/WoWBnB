@@ -15,7 +15,7 @@ function WoWBnB_AddHouse(owner, neighborhood, neighborhoodGUID, houseGUID, plotI
         end
     end
 
-    print("owner:" .. owner .. "   hoodName:" .. neighborhood .. "   hoodId:" .. neighborhoodGUID .. "   house:" .. houseGUID .. "   plot:" .. plotID)
+    --print("owner:" .. owner .. "   hoodName:" .. neighborhood .. "   hoodId:" .. neighborhoodGUID .. "   house:" .. houseGUID .. "   plot:" .. plotID)
     table.insert(WoWBnB_HousesDB.houses, {
         owner = owner,
         neighborhood = neighborhood,

@@ -182,8 +182,7 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     saveBtn:SetText("Save Current House")
     saveBtn:SetScript("OnClick", WoWBnB_SaveCurrentHouse)
 
-    -- Export/Import remain largely unchanged
-    -- But updated for new format with GUIDs
+    -- Export/Import
     local exportBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     exportBtn:SetSize(160, 30)
     exportBtn:SetPoint("BOTTOMLEFT", 20, 10)
