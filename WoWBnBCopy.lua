@@ -24,9 +24,9 @@ scrollFrame:SetScrollChild(editBox)
 
 -- Close on Ctrl+C (similar to how /simc handles clipboard)
 editBox:SetScript("OnKeyDown", function(self, key)
-    if key == "C" and IsControlKeyDown() then
-        frame:Hide()
-    end
+  if key == "C" and IsControlKeyDown() then
+    frame:Hide()
+  end
 end)
 
 -- Okay button
@@ -36,22 +36,21 @@ okButton:SetPoint("BOTTOM", 0, 12)
 okButton:SetText("Okay")
 
 okButton:SetScript("OnClick", function()
-    frame:Hide()
+  frame:Hide()
 end)
 
 -- Slash command to toggle frame
 SLASH_WOWBNBCOPY1 = "/wowbnb"
 SLASH_WOWBNBCOPY2 = "/wbnb"
 SlashCmdList["WOWBNBCOPY"] = function()
-    if frame:IsShown() then
-        frame:Hide()
-    else
-        frame:Show()
-	houseInfo = C_Housing.GetCurrentHouseInfo()
-	-- /run C_Housing.VisitHouse(houseInfo.neighborehoodGUID, houseInfo.houseGUID, houseInfo.plotID)
-        editBox:SetText("/run C_Housing.VisitHouse(\"" .. houseInfo.neighborhoodGUID .. "\", \"" .. houseInfo.houseGUID .. "\", " .. houseInfo.plotID .. ")")
-        editBox:HighlightText()
-        editBox:SetFocus()
-    end
+  if frame:IsShown() then
+    frame:Hide()
+  else
+    frame:Show()
+    houseInfo = C_Housing.GetCurrentHouseInfo()
+    -- /run C_Housing.VisitHouse(houseInfo.neighborehoodGUID, houseInfo.houseGUID, houseInfo.plotID)
+    editBox:SetText("/run C_Housing.VisitHouse(\"" .. houseInfo.neighborhoodGUID .. "\", \"" .. houseInfo.houseGUID .. "\", " .. houseInfo.plotID .. ")")
+    editBox:HighlightText()
+    editBox:SetFocus()
+  end
 end
-
