@@ -49,7 +49,6 @@ SlashCmdList["WOWBNBCOPY"] = function()
   else
     frame:Show()
     local houseInfo = C_Housing.GetCurrentHouseInfo()
-    -- /run C_Housing.VisitHouse(houseInfo.neighborehoodGUID, houseInfo.houseGUID, houseInfo.plotID)
     editBox:SetText("/run C_Housing.VisitHouse(\"" .. houseInfo.neighborhoodGUID .. "\", \"" .. houseInfo.houseGUID .. "\", " .. houseInfo.plotID .. ")")
     editBox:HighlightText()
     editBox:SetFocus()

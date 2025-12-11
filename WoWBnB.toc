@@ -3,5 +3,8 @@
 ## Title: WoW BnB
 ## Notes: Share your house with the world!
 ## Author: Jeremy-Gstein
+## SavedVariables: WoWBnB_HousesDB
 
 WoWBnBCore.lua
+WoWBnBCollection.lua
+WoWBnBCollection_UI.lua
