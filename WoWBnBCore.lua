@@ -18,7 +18,8 @@ editBox:SetMultiLine(true)
 editBox:SetFontObject(ChatFontNormal)
 editBox:SetWidth(340)
 editBox:SetAutoFocus(true)
-editBox:SetText("How-to: 1. be on your house plot before running /wowbnb. 2. copy and share the command that will appear here")
+-- Default message appears in box when not currently at a housing plot.
+editBox:SetText("Thank you for checking out WoWBnB (:\n\n\nHow-to:\n\n1. be on your house plot before running /wowbnb.\n\n2. copy and share the command that will appear here")
 
 scrollFrame:SetScrollChild(editBox)
 

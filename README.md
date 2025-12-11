@@ -10,6 +10,8 @@
 - encodes as a raw macro string so sharing does NOT require addon for visitors.
 - alias `/wbnb`
 
+![Example displays addon menu appearing in game.](https://media.forgecdn.net/attachments/1419/701/wowbnb-ingame-png.png)
+
 ## Example Usage:
 - *player logs into account and goes to a plot that they own.*
 - In chat type the slash command: `/wowbnb`
