@@ -6,7 +6,7 @@ frame:Hide()
 
 frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 frame.title:SetPoint("CENTER", frame.TitleBg, "CENTER", 0, 0)
-frame.title:SetText("WoWBnB ~ Share your house with everyone!")
+frame.title:SetText("WoWBnB - Share your house with everyone!")
 
 -- Multiline edit box
 local scrollFrame = CreateFrame("ScrollFrame", "WoWBnBCoreScrollFrame", frame, "UIPanelScrollFrameTemplate")
@@ -48,7 +48,7 @@ SlashCmdList["WOWBNBCOPY"] = function()
     frame:Hide()
   else
     frame:Show()
-    houseInfo = C_Housing.GetCurrentHouseInfo()
+    local houseInfo = C_Housing.GetCurrentHouseInfo()
     -- /run C_Housing.VisitHouse(houseInfo.neighborehoodGUID, houseInfo.houseGUID, houseInfo.plotID)
     editBox:SetText("/run C_Housing.VisitHouse(\"" .. houseInfo.neighborhoodGUID .. "\", \"" .. houseInfo.houseGUID .. "\", " .. houseInfo.plotID .. ")")
     editBox:HighlightText()
