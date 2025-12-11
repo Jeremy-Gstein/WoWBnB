@@ -1,5 +1,5 @@
 -- Main frame
-local frame = CreateFrame("Frame", "WoWBnBCopyFrame", UIParent, "BasicFrameTemplateWithInset")
+local frame = CreateFrame("Frame", "WoWBnBCoreFrame", UIParent, "BasicFrameTemplateWithInset")
 frame:SetSize(400, 200)
 frame:SetPoint("CENTER")
 frame:Hide()
@@ -9,11 +9,11 @@ frame.title:SetPoint("CENTER", frame.TitleBg, "CENTER", 0, 0)
 frame.title:SetText("WoWBnB ~ Share your house with everyone!")
 
 -- Multiline edit box
-local scrollFrame = CreateFrame("ScrollFrame", "WoWBnBCopyScrollFrame", frame, "UIPanelScrollFrameTemplate")
+local scrollFrame = CreateFrame("ScrollFrame", "WoWBnBCoreScrollFrame", frame, "UIPanelScrollFrameTemplate")
 scrollFrame:SetPoint("TOPLEFT", 16, -40)
 scrollFrame:SetPoint("BOTTOMRIGHT", -30, 40)
 
-local editBox = CreateFrame("EditBox", "WoWBnBCopyEditBox", scrollFrame)
+local editBox = CreateFrame("EditBox", "WoWBnBCoreEditBox", scrollFrame)
 editBox:SetMultiLine(true)
 editBox:SetFontObject(ChatFontNormal)
 editBox:SetWidth(340)
@@ -30,7 +30,7 @@ editBox:SetScript("OnKeyDown", function(self, key)
 end)
 
 -- Okay button
-local okButton = CreateFrame("Button", "WoWBnBCopyOkButton", frame, "UIPanelButtonTemplate")
+local okButton = CreateFrame("Button", "WoWBnBCoreOkButton", frame, "UIPanelButtonTemplate")
 okButton:SetSize(80, 24)
 okButton:SetPoint("BOTTOM", 0, 12)
 okButton:SetText("Okay")

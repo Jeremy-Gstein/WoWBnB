@@ -4,4 +4,4 @@
 ## Notes: Share your house with the world!
 ## Author: Jeremy-Gstein
 
-WoWBnBCopy.lua
+WoWBnBCore.lua
