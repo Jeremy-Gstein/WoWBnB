@@ -64,7 +64,7 @@ function WoWBnB_RunHouseCommand(index)
 
     frame:SetScript("OnUpdate", function(self, elapsed)
         if attemptIndex > #attempts then
-            print("WoWBnB: Done attempting teleport. None worked?")
+            -- print("WoWBnB: Done attempting teleport. None worked?")
             self:Hide()
             self:SetScript("OnUpdate", nil)
             return
@@ -72,7 +72,7 @@ function WoWBnB_RunHouseCommand(index)
 
         -- Stop if player started casting
         if UnitCastingInfo("player") or UnitChannelInfo("player") then
-            print("WoWBnB: Teleport started with " .. attempts[attemptIndex - 1])
+            -- print("WoWBnB: Teleport started with " .. attempts[attemptIndex - 1])
             self:Hide()
             self:SetScript("OnUpdate", nil)
             return
@@ -83,7 +83,7 @@ function WoWBnB_RunHouseCommand(index)
         C_Housing.VisitHouse(h.neighborhoodGUID, guid, h.plotID)
 
         if attemptIndex > 1 and attemptIndex % 5 == 0 then
-            print("WoWBnB: Tried " .. attemptIndex .. " houseGUIDs")
+            -- print("WoWBnB: Tried " .. attemptIndex .. " houseGUIDs")
         end
 
         attemptIndex = attemptIndex + 1
