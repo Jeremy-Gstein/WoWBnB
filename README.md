@@ -1,12 +1,13 @@
 # **WoWBnB** 
-*a simple addon to create shareable links to your house both in-game and out!*
+*a simple way to store your favorite house to come back later!*
 **NEW UI!** - whare expanded the initial idea and the addon now lets you neatly organize and save your favorite houses by neighborhoods!.
 
 --- 
 ## Commands:
-`/wowbnbc`:
+`/bnb`:
 - Opens a interface to save your favorite plots
 - Members of same neighborhoods are grouped and collapseable
+- alias:`'/wowbnbc`
 **KNOWN ISSUE:** Currently, Import/Export is not working as intended.
 
 `/wowbnb`:

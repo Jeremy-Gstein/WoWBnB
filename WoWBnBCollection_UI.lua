@@ -182,11 +182,12 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     saveBtn:SetText("Save Current House")
     saveBtn:SetScript("OnClick", WoWBnB_SaveCurrentHouse)
 
-    -- Export/Import
+    -- *TODO* Export/Import
+    -- Re-name export to Debug.
     local exportBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     exportBtn:SetSize(160, 30)
     exportBtn:SetPoint("BOTTOMLEFT", 20, 10)
-    exportBtn:SetText("Export Houses")
+    exportBtn:SetText("Debug") -- Changed from export
     exportBtn:SetScript("OnClick", function()
         local exportStr = WoWBnB_ExportHouses()
 
@@ -199,7 +200,7 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
 
         exportFrame.title = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         exportFrame.title:SetPoint("TOP", 0, -5)
-        exportFrame.title:SetText("Exported Houses")
+        exportFrame.title:SetText("Debug Saved Housed") -- Changed from export
 
         local scroll = CreateFrame("ScrollFrame", nil, exportFrame, "UIPanelScrollFrameTemplate")
         scroll:SetPoint("TOPLEFT", 10, -40)
@@ -226,51 +227,54 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
         exportFrame:Show()
     end)
 
-    local importBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    importBtn:SetSize(160, 30)
-    importBtn:SetPoint("BOTTOMRIGHT", -20, 10)
-    importBtn:SetText("Import Houses")
-    importBtn:SetScript("OnClick", function()
-        local importFrame = CreateFrame("Frame", "WoWBnBImportFrame", frame, "BasicFrameTemplateWithInset")
-        importFrame:SetSize(400, 300)
-        importFrame:SetPoint("CENTER", frame, "CENTER")
-        importFrame:SetFrameStrata("DIALOG")
-        importFrame:SetFrameLevel(frame:GetFrameLevel() + 50)
-        importFrame:Hide()
-
-        importFrame.title = importFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        importFrame.title:SetPoint("TOP", 0, -5)
-        importFrame.title:SetText("Import Houses")
-
-        local scroll = CreateFrame("ScrollFrame", nil, importFrame, "UIPanelScrollFrameTemplate")
-        scroll:SetPoint("TOPLEFT", 10, -40)
-        scroll:SetPoint("BOTTOMRIGHT", -10, 40)
-
-        local edit = CreateFrame("EditBox", nil, scroll)
-        edit:SetMultiLine(true)
-        edit:SetFontObject(ChatFontNormal)
-        edit:SetWidth(360)
-        edit:SetAutoFocus(true)
-        scroll:SetScrollChild(edit)
-
-        local okBtn = CreateFrame("Button", nil, importFrame, "UIPanelButtonTemplate")
-        okBtn:SetSize(80, 24)
-        okBtn:SetPoint("BOTTOM", 0, 10)
-        okBtn:SetText("Import")
-        okBtn:SetScript("OnClick", function()
-            local text = edit:GetText()
-            WoWBnB_ImportHouses(text)
-            importFrame:Hide()
-        end)
-
-        importFrame:SetScript("OnShow", function() overlay:Show() end)
-        importFrame:SetScript("OnHide", function() overlay:Hide() end)
-
-        importFrame:Show()
-    end)
-
-    -- Slash command
+    -- *TODO* Finish Import/Export Impl
+    -- local importBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    -- importBtn:SetSize(160, 30)
+    -- importBtn:SetPoint("BOTTOMRIGHT", -20, 10)
+    -- importBtn:SetText("Import Houses")
+    -- importBtn:SetScript("OnClick", function()
+    --     local importFrame = CreateFrame("Frame", "WoWBnBImportFrame", frame, "BasicFrameTemplateWithInset")
+    --     importFrame:SetSize(400, 300)
+    --     importFrame:SetPoint("CENTER", frame, "CENTER")
+    --     importFrame:SetFrameStrata("DIALOG")
+    --     importFrame:SetFrameLevel(frame:GetFrameLevel() + 50)
+    --     importFrame:Hide()
+    --
+    --     importFrame.title = importFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    --     importFrame.title:SetPoint("TOP", 0, -5)
+    --     importFrame.title:SetText("Import Houses")
+    --
+    --     local scroll = CreateFrame("ScrollFrame", nil, importFrame, "UIPanelScrollFrameTemplate")
+    --     scroll:SetPoint("TOPLEFT", 10, -40)
+    --     scroll:SetPoint("BOTTOMRIGHT", -10, 40)
+    --
+    --     local edit = CreateFrame("EditBox", nil, scroll)
+    --     edit:SetMultiLine(true)
+    --     edit:SetFontObject(ChatFontNormal)
+    --     edit:SetWidth(360)
+    --     edit:SetAutoFocus(true)
+    --     scroll:SetScrollChild(edit)
+    --
+    --     local okBtn = CreateFrame("Button", nil, importFrame, "UIPanelButtonTemplate")
+    --     okBtn:SetSize(80, 24)
+    --     okBtn:SetPoint("BOTTOM", 0, 10)
+    --     okBtn:SetText("Import")
+    --     okBtn:SetScript("OnClick", function()
+    --         local text = edit:GetText()
+    --         WoWBnB_ImportHouses(text)
+    --         importFrame:Hide()
+    --     end)
+    --
+    --     importFrame:SetScript("OnShow", function() overlay:Show() end)
+    --     importFrame:SetScript("OnHide", function() overlay:Hide() end)
+    --
+    --     importFrame:Show()
+    -- end)
+    --
+  
+    -- Favorite House UI Slash command
     SLASH_WOWBNBCOLLECTION1 = "/wowbnbc"
+    SLASH_WOWBNBCOLLECTION2 = "/bnb"
     SlashCmdList["WOWBNBCOLLECTION"] = function()
         if frame:IsShown() then
             frame:Hide()

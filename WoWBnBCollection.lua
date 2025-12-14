@@ -1,29 +1,33 @@
+------------------------------------------------------------
 -- SavedVariables
+------------------------------------------------------------
 WoWBnB_HousesDB = WoWBnB_HousesDB or { houses = {} }
 
+------------------------------------------------------------
 -- Add a house
+------------------------------------------------------------
 function WoWBnB_AddHouse(owner, neighborhood, neighborhoodGUID, houseGUID, plotID)
-    if not owner or not neighborhood or not neighborhoodGUID or not houseGUID or not plotID then
+    if not owner or not neighborhood or not neighborhoodGUID or not plotID then
         print("WoWBnB: Cannot save house, missing data.")
         return false
     end
 
     for _, h in ipairs(WoWBnB_HousesDB.houses) do
-        if h.owner == owner and h.neighborhood == neighborhood and h.houseGUID == houseGUID then
-            print("House already saved: " .. neighborhood .. " - " .. owner)
+        if h.owner == owner and h.neighborhood == neighborhood and h.plotID == plotID then
+            print("House already saved: " .. neighborhood .. " - " .. owner .. " plot " .. plotID)
             return false
         end
     end
 
-    --print("owner:" .. owner .. "   hoodName:" .. neighborhood .. "   hoodId:" .. neighborhoodGUID .. "   house:" .. houseGUID .. "   plot:" .. plotID)
     table.insert(WoWBnB_HousesDB.houses, {
         owner = owner,
         neighborhood = neighborhood,
         neighborhoodGUID = neighborhoodGUID,
-        houseGUID = houseGUID,
+        houseGUID = houseGUID,  -- for display only
         plotID = plotID,
     })
-    print("Saved house: " .. neighborhood .. " - " .. owner)
+
+    print("Saved house: " .. neighborhood .. " - " .. owner .. " plot " .. plotID)
 
     if WoWBnB_RefreshUIList then
         WoWBnB_RefreshUIList()
@@ -32,18 +36,64 @@ function WoWBnB_AddHouse(owner, neighborhood, neighborhoodGUID, houseGUID, plotI
     return true
 end
 
-
--- Run saved house
+------------------------------------------------------------
+-- Teleport using saved GUID first, then brute-force Opaque-1..20
+-- Detect casting with OnUpdate
+------------------------------------------------------------
 function WoWBnB_RunHouseCommand(index)
     local h = WoWBnB_HousesDB.houses[index]
-    if not h or not (h.neighborhoodGUID and h.houseGUID and h.plotID) then
+    if not h or not (h.neighborhoodGUID and h.plotID) then
         print("WoWBnB: House info incomplete.")
         return
     end
-    C_Housing.VisitHouse(h.neighborhoodGUID, h.houseGUID, h.plotID)
+
+    print("WoWBnB: Attempting teleport to " .. h.neighborhood .. " plot " .. h.plotID)
+
+    local attempts = {}
+    -- Saved GUID first
+    if h.houseGUID then
+        table.insert(attempts, h.houseGUID)
+    end
+    -- Brute-force Opaque-1..20 *MAY REQURE TUNING IF <20 Exists
+    for i = 1, 20 do
+        table.insert(attempts, "Opaque-" .. i)
+    end
+
+    local frame = CreateFrame("Frame")
+    local attemptIndex = 1
+
+    frame:SetScript("OnUpdate", function(self, elapsed)
+        if attemptIndex > #attempts then
+            print("WoWBnB: Done attempting teleport. None worked?")
+            self:Hide()
+            self:SetScript("OnUpdate", nil)
+            return
+        end
+
+        -- Stop if player started casting
+        if UnitCastingInfo("player") or UnitChannelInfo("player") then
+            print("WoWBnB: Teleport started with " .. attempts[attemptIndex - 1])
+            self:Hide()
+            self:SetScript("OnUpdate", nil)
+            return
+        end
+
+        -- Try next attempt
+        local guid = attempts[attemptIndex]
+        C_Housing.VisitHouse(h.neighborhoodGUID, guid, h.plotID)
+
+        if attemptIndex > 1 and attemptIndex % 5 == 0 then
+            print("WoWBnB: Tried " .. attemptIndex .. " houseGUIDs")
+        end
+
+        attemptIndex = attemptIndex + 1
+    end)
 end
 
--- Export
+
+------------------------------------------------------------
+-- Export saved houses *DEBUG*
+------------------------------------------------------------
 function WoWBnB_ExportHouses()
     local t = {}
     for _, h in ipairs(WoWBnB_HousesDB.houses) do
@@ -52,23 +102,28 @@ function WoWBnB_ExportHouses()
     return table.concat(t, "\n")
 end
 
--- Import
-function WoWBnB_ImportHouses(text)
-    for line in string.gmatch(text, "[^\n]+") do
-        local n, o, ng, hg, p = strsplit("|", line)
-        if n and o and ng and hg and p then
-            WoWBnB_AddHouse(o, n, ng, hg, tonumber(p))
-        end
-    end
-end
-
--- Save current house
+------------------------------------------------------------
+-- Import saved houses *TODO* 
+------------------------------------------------------------
+-- function WoWBnB_ImportHouses(text)
+--     for line in string.gmatch(text, "[^\n]+") do
+--         local n, o, ng, hg, p = strsplit("|", line)
+--         if n and o and ng and hg and p then
+--             WoWBnB_AddHouse(o, n, ng, hg, tonumber(p))
+--         end
+--     end
+-- end
+--
+------------------------------------------------------------
+-- Save current house (your own plot)
+------------------------------------------------------------
 function WoWBnB_SaveCurrentHouse()
     local houseInfo = C_Housing.GetCurrentHouseInfo()
     if not houseInfo then
         print("You must be standing on a house plot to save it.")
         return
     end
+
     local owner = houseInfo.ownerName or "Unknown"
     local neighborhood = houseInfo.neighborhoodName or "Unknown"
     local neighborhoodGUID = houseInfo.neighborhoodGUID
@@ -77,3 +132,4 @@ function WoWBnB_SaveCurrentHouse()
 
     WoWBnB_AddHouse(owner, neighborhood, neighborhoodGUID, houseGUID, plotID)
 end
+
