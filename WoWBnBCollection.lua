@@ -53,46 +53,63 @@ function WoWBnB_RunHouseCommand(index)
 
     print("WoWBnB: Attempting teleport to " .. h.neighborhood .. " plot " .. h.plotID)
 
+    -- Build attempt list: saved GUID first, then fallback Opaque-1..20
     local attempts = {}
-
-    -- Saved GUID first
     if h.houseGUID then
         table.insert(attempts, h.houseGUID)
     end
-
-    -- Brute-force Opaque-1..20 *MAY REQURE TUNING IF <20 Exists
     for i = 1, 20 do
         table.insert(attempts, "Opaque-" .. i)
     end
 
-    local frame = CreateFrame("Frame")
     local attemptIndex = 1
+    local isCasting = false
+    local successHandled = false
 
-    frame:SetScript("OnUpdate", function(self)
-        if attemptIndex > #attempts then
-            self:SetScript("OnUpdate", nil)
-            self:Hide()
-            return
-        end
+    -- Frame to handle retries and spell events
+    local frame = CreateFrame("Frame")
+    
+    frame:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
+    frame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+    frame:RegisterUnitEvent("UNIT_SPELLCAST_STOP", "player")
 
-        if UnitCastingInfo("player") or UnitChannelInfo("player") then
+    frame:SetScript("OnEvent", function(self, event, unit, _, spellID)
+        if unit ~= "player" then return end
+
+        local spellInfo = C_Spell.GetSpellInfo(spellID)
+        local spellName = spellInfo.name
+
+        if spellName ~= "House Visit" then return end
+
+        if event == "UNIT_SPELLCAST_START" then
+            isCasting = true
+        elseif event == "UNIT_SPELLCAST_STOP" then
+            isCasting = false
+        elseif event == "UNIT_SPELLCAST_SUCCEEDED" and not successHandled then
+            successHandled = true
             h.lastVisited = time()
             h.visitCount = (h.visitCount or 0) + 1
+            print("WoWBnB: Successfully visited house: " .. h.neighborhood)
+
+            self:UnregisterAllEvents()
             self:SetScript("OnUpdate", nil)
             self:Hide()
+        end
+    end)
+
+    frame:SetScript("OnUpdate", function(self, elapsed)
+        if successHandled then
+            self:SetScript("OnUpdate", nil)
             return
         end
 
-        -- Try next attempt
-        local guid = attempts[attemptIndex]
-        C_Housing.VisitHouse(h.neighborhoodGUID, guid, h.plotID)
-
-        if attemptIndex > 1 and attemptIndex % 5 == 0 then
-            -- print("WoWBnB: Tried " .. attemptIndex .. " houseGUIDs")
+        -- Only attempt a new VisitHouse if not currently casting
+        if not isCasting and attemptIndex <= #attempts then
+            local guid = attempts[attemptIndex]
+            print("WoWBnB: Trying houseGUID " .. guid)
+            C_Housing.VisitHouse(h.neighborhoodGUID, guid, h.plotID)
+            attemptIndex = attemptIndex + 1
         end
-
-        C_Housing.VisitHouse(h.neighborhoodGUID, attempts[attemptIndex], h.plotID)
-        attemptIndex = attemptIndex + 1
     end)
 end
 

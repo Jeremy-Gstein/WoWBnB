@@ -7,20 +7,16 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     WoWBnB_HousesDB = WoWBnB_HousesDB or {}
     WoWBnB_HousesDB.houses = WoWBnB_HousesDB.houses or {}
 
-    local collapsedNeighborhoods = {}
     local selectedIndex = nil
-
     local searchText = ""
-    local sortMode = "NEIGHBORHOOD"
 
     ------------------------------------------------------------
     -- Main Frame
     ------------------------------------------------------------
     local frame = CreateFrame("Frame", "WoWBnBCollectionFrame", UIParent, "BasicFrameTemplateWithInset")
-    frame:SetSize(450, 540)
+    frame:SetSize(700, 540) -- increased width to fit table
     frame:SetPoint("CENTER")
     frame:Hide()
-
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
@@ -32,7 +28,7 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     frame.title:SetText("My Favorite Houses")
 
     ------------------------------------------------------------
-    -- Debug Frame
+    -- Overlay (for modals)
     ------------------------------------------------------------
     local overlay = CreateFrame("Frame", nil, frame)
     overlay:SetAllPoints(frame)
@@ -84,78 +80,33 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     confirmFrame:SetScript("OnHide", function() overlay:Hide() end)
 
     ------------------------------------------------------------
-    -- Search Box
+    -- Search Box + Clear Button
     ------------------------------------------------------------
     local searchBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
     searchBox:SetSize(200, 24)
     local clearButtonWidth = 22
     local padding = 4
     searchBox:SetTextInsets(4, clearButtonWidth + padding, 0, 0)
-
     searchBox:SetPoint("TOPLEFT", 20, -32)
     searchBox:SetAutoFocus(false)
 
-    -- Placeholder text (visual only)
     local placeholder = searchBox:CreateFontString(nil, "OVERLAY", "GameFontDisable")
     placeholder:SetPoint("LEFT", 8, 0)
     placeholder:SetText("Search...")
     placeholder:Show()
 
-    local clearBtn
-    searchBox:SetScript("OnTextChanged", function(self)
-        searchText = self:GetText():lower()
-
-        if searchText == "" then
-            placeholder:Show()
-            clearBtn:Hide()
-        else
-            placeholder:Hide()
-            clearBtn:Show()
-        end
-
-        WoWBnB_RefreshUIList()
-    end)
-
-    searchBox:SetScript("OnEditFocusGained", function()
-        placeholder:Hide()
-    end)
-
-    searchBox:SetScript("OnEditFocusLost", function(self)
-        if self:GetText() == "" then
-            placeholder:Show()
-        end
-    end)
-
-    searchBox:SetScript("OnEscapePressed", function(self)
-        self:SetText("")
-        self:ClearFocus()
-    end)
-
-    ------------------------------------------------------------
-    -- Clear Search Button
-    ------------------------------------------------------------
-    -- Clear Search Button (inside EditBox)
-    clearBtn = CreateFrame("Button", nil, searchBox)
+    local clearBtn = CreateFrame("Button", nil, searchBox)
     clearBtn:SetSize(18, 18)
     clearBtn:SetPoint("RIGHT", -4, 0)
-
-    -- Ensure it sits ABOVE the EditBox
     clearBtn:SetFrameLevel(searchBox:GetFrameLevel() + 10)
-
     clearBtn:SetAlpha(0.6)
-
     clearBtn:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
     clearBtn:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
     clearBtn:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
-
-    -- Force textures to fill the button
     clearBtn:GetNormalTexture():SetAllPoints()
     clearBtn:GetPushedTexture():SetAllPoints()
     clearBtn:GetHighlightTexture():SetAllPoints()
-
-    -- Slightly bigger clickable area
     clearBtn:SetHitRectInsets(-6, -6, -6, -6)
-
     clearBtn:Hide()
 
     clearBtn:SetScript("OnEnter", function(self)
@@ -164,53 +115,44 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
         GameTooltip:AddLine("Clear search")
         GameTooltip:Show()
     end)
-
     clearBtn:SetScript("OnLeave", function(self)
         self:SetAlpha(0.6)
         GameTooltip:Hide()
     end)
-
     clearBtn:SetScript("OnClick", function()
         searchBox:SetText("")
         searchBox:ClearFocus()
         placeholder:Show()
-        self:Hide()
+        clearBtn:Hide()
     end)
 
-    ------------------------------------------------------------
-    -- Sort Dropdown
-    ------------------------------------------------------------
-    local sortDropdown = CreateFrame("Frame", "WoWBnBSortDropdown", frame, "UIDropDownMenuTemplate")
-    sortDropdown:SetPoint("TOPRIGHT", -20, -31)
-
-    UIDropDownMenu_SetWidth(sortDropdown, 150)
-    UIDropDownMenu_SetText(sortDropdown, "Sort: Neighborhood")
-
-    UIDropDownMenu_Initialize(sortDropdown, function()
-        local function Add(text, value)
-            UIDropDownMenu_AddButton({
-                text = text,
-                checked = (sortMode == value),
-                func = function()
-                    sortMode = value
-                    UIDropDownMenu_SetText(sortDropdown, "Sort: " .. text)
-                    WoWBnB_RefreshUIList()
-                end
-            })
+    searchBox:SetScript("OnTextChanged", function(self)
+        searchText = self:GetText():lower()
+        if searchText == "" then
+            placeholder:Show()
+            clearBtn:Hide()
+        else
+            placeholder:Hide()
+            clearBtn:Show()
         end
+        WoWBnB_RefreshUIList()
+    end)
 
-        Add("Neighborhood", "NEIGHBORHOOD")
-        Add("Owner", "OWNER")
-        Add("Recently Added", "RECENT")
-        Add("Most Visited", "MOST_VISITED")
+    searchBox:SetScript("OnEditFocusGained", function() placeholder:Hide() end)
+    searchBox:SetScript("OnEditFocusLost", function(self)
+        if self:GetText() == "" then placeholder:Show() end
+    end)
+    searchBox:SetScript("OnEscapePressed", function(self)
+        self:SetText("")
+        self:ClearFocus()
     end)
 
     ------------------------------------------------------------
-    -- Results Counter (X / Y houses shown)
+    -- Results Counter
     ------------------------------------------------------------
     local resultsText = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     resultsText:SetPoint("TOPLEFT", 20, -60)
-    resultsText:SetHeight(32) -- allow two lines
+    resultsText:SetHeight(32)
     resultsText:SetJustifyH("LEFT")
     resultsText:SetText("")
 
@@ -222,162 +164,187 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     scrollFrame:SetPoint("BOTTOMRIGHT", -30, 110)
 
     local content = CreateFrame("Frame", nil, scrollFrame)
-    content:SetSize(400, 1)
+    content:SetSize(frame:GetWidth() - 40, 1)
     scrollFrame:SetScrollChild(content)
 
     ------------------------------------------------------------
-    -- Hover Highlight
+    -- Table Header with Sorting
     ------------------------------------------------------------
-    local function AddHoverHighlight(row)
-        local hl = row:CreateTexture(nil, "BACKGROUND")
-        hl:SetAllPoints()
-        hl:SetColorTexture(1, 1, 0, 0.15)
-        hl:Hide()
-        row:SetScript("OnEnter", function() hl:Show() end)
-        row:SetScript("OnLeave", function() hl:Hide() end)
+    local columnNames = { "Owner", "Neighborhood", "Times Visited", "Actions" }
+    local columnWidths = { Owner = 160, Neighborhood = 180, ["Times Visited"] = 120, Actions = 140 }
+
+    local headerRow = CreateFrame("Frame", nil, content)
+    headerRow:SetSize(content:GetWidth(), 28)
+    headerRow:SetPoint("TOPLEFT", 0, 0)
+
+    local headerFS = {}
+    local headerArrows = {}
+
+    -- Sorting state
+    local sortColumn = "Owner"
+    local sortAscending = true
+
+    local xOffset = 0
+    for _, colName in ipairs(columnNames) do
+        -- Header fontstring
+        headerFS[colName] = headerRow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        headerFS[colName]:SetPoint("TOPLEFT", xOffset + 4, -2)
+        headerFS[colName]:SetText(colName)
+        headerFS[colName]:SetJustifyH("LEFT")
+        headerFS[colName]:SetFont(headerFS[colName]:GetFont(), 14, "OUTLINE")
+
+        -- Arrow texture (right of text)
+        headerArrows[colName] = headerRow:CreateTexture(nil, "OVERLAY")
+        headerArrows[colName]:SetSize(28, 28)
+        headerArrows[colName]:SetPoint("LEFT", headerFS[colName], "RIGHT", 6, 0)
+        headerArrows[colName]:Hide()
+
+        -- Clickable button overlay for sorting
+        local btn = CreateFrame("Button", nil, headerRow)
+        btn:SetSize(columnWidths[colName], 28)
+        btn:SetPoint("TOPLEFT", xOffset, 0)
+        btn:SetScript("OnClick", function()
+            if sortColumn == colName then
+                sortAscending = not sortAscending
+            else
+                sortColumn = colName
+                sortAscending = true
+            end
+            WoWBnB_RefreshUIList()
+        end)
+
+        xOffset = xOffset + columnWidths[colName]
+    end
+
+    -- Function to update arrows based on sort state
+    local function UpdateHeaderArrows()
+        for _, colName in ipairs(columnNames) do
+            if colName == sortColumn then
+                headerArrows[colName]:Show()
+                if sortAscending then
+                    headerArrows[colName]:SetTexture("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up") -- up arrow
+                else
+                    headerArrows[colName]:SetTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up") -- down arrow
+                end
+            else
+                headerArrows[colName]:Hide()
+            end
+        end
     end
 
     ------------------------------------------------------------
-    -- Refresh List (SEARCH + SORT)
+    -- Refresh UI List
     ------------------------------------------------------------
     function WoWBnB_RefreshUIList()
-        for _, child in ipairs({ content:GetChildren() }) do
-            child:Hide()
-            child:SetParent(nil)
+        -- Clear existing rows except header
+        for _, child in ipairs({content:GetChildren()}) do
+            if child ~= headerRow then
+                child:Hide()
+                child:SetParent(nil)
+            end
         end
 
-        local filtered = {}
-
+        -- Filter houses
+        local filteredHouses = {}
         for i, h in ipairs(WoWBnB_HousesDB.houses) do
             local owner = (h.owner or ""):lower()
             local neighborhood = (h.neighborhood or ""):lower()
-
-            if searchText == ""
-                or owner:find(searchText, 1, true)
-                or neighborhood:find(searchText, 1, true) then
-
-                table.insert(filtered, {
+            if searchText == "" or owner:find(searchText, 1, true) or neighborhood:find(searchText, 1, true) then
+                table.insert(filteredHouses, {
                     index = i,
-                    owner = h.owner,
-                    neighborhood = h.neighborhood,
-                    data = h,
+                    owner = h.owner or "",
+                    neighborhood = h.neighborhood or "",
+                    visits = h.visitCount or 0,
+                    data = h
                 })
             end
         end
 
-        -- Group filtered houses by neighborhood
-        local grouped = {}
-        for _, h in ipairs(filtered) do
-            grouped[h.neighborhood] = grouped[h.neighborhood] or {}
-            table.insert(grouped[h.neighborhood], h)
-        end
-
-        -- Count neighborhoods
-        local filteredNeighborhoodCount = 0
-        for _, hlist in pairs(grouped) do
-            if #hlist > 0 then
-                filteredNeighborhoodCount = filteredNeighborhoodCount + 1
-            end
-        end
-
-        local totalNeighborhoodCount = 0
-        local allNeighborhoods = {}
-        for _, h in ipairs(WoWBnB_HousesDB.houses) do
-            allNeighborhoods[h.neighborhood] = true
-        end
-        for _ in pairs(allNeighborhoods) do totalNeighborhoodCount = totalNeighborhoodCount + 1 end
-
-        -- Update results counter
-        resultsText:SetText(
-            string.format("%d / %d Houses shown\n%d / %d Neighborhoods shown",
-                #filtered,
-                #WoWBnB_HousesDB.houses,
-                filteredNeighborhoodCount,
-                totalNeighborhoodCount
-            )
-        )
-
-        -- Sorting logic (same as before)
-        table.sort(filtered, function(a, b)
-            if sortMode == "OWNER" then
-                return a.owner < b.owner
-            elseif sortMode == "RECENT" then
-                return (a.data.addedAt or 0) > (b.data.addedAt or 0)
-            elseif sortMode == "MOST_VISITED" then
-                return (a.data.visitCount or 0) > (b.data.visitCount or 0)
-            else
-                if a.neighborhood == b.neighborhood then
-                    return a.owner < b.owner
-                end
-                return a.neighborhood < b.neighborhood
-            end
+        -- Sort
+        table.sort(filteredHouses, function(a, b)
+            local col = sortColumn
+            local asc = sortAscending
+            local valA, valB
+            if col == "Owner" then valA, valB = a.owner, b.owner
+            elseif col == "Neighborhood" then valA, valB = a.neighborhood, b.neighborhood
+            elseif col == "Times Visited" then valA, valB = a.visits, b.visits
+            else valA, valB = 0, 0 end
+            valA = valA or ""
+            valB = valB or ""
+            if valA == valB then return a.index < b.index end
+            if asc then return valA < valB else return valA > valB end
         end)
 
-        -- Build UI rows (same as before)
-        local yOffset = -10
-        local neighborhoods = {}
-        for k in pairs(grouped) do table.insert(neighborhoods, k) end
-        table.sort(neighborhoods)
+        -- Build rows
+        local headerHeight = 28
+        local rowHeight = 24
+        local yOffset = -headerHeight
+        local rowIndex = 0
+        for _, h in ipairs(filteredHouses) do
+            local row = CreateFrame("Frame", nil, content)
+            row:SetSize(content:GetWidth(), rowHeight)
+            row:SetPoint("TOPLEFT", 0, yOffset)
 
-        for _, neighborhood in ipairs(neighborhoods) do
-            local header = CreateFrame("Frame", nil, content)
-            header:SetSize(360, 24)
-            header:SetPoint("TOPLEFT", 10, yOffset)
-            AddHoverHighlight(header)
+            -- Alternating background
+            local bg = row:CreateTexture(nil, "BACKGROUND")
+            bg:SetAllPoints()
+            if rowIndex % 2 == 0 then
+                bg:SetColorTexture(1, 1, 1, 0.05)
+            else
+                bg:SetColorTexture(0, 0, 0, 0.05)
+            end
+            rowIndex = rowIndex + 1
 
-            local toggle = CreateFrame("Button", nil, header, "UIPanelButtonTemplate")
-            toggle:SetSize(22, 20)
-            toggle:SetPoint("LEFT", 0, 0)
-            toggle:SetText(collapsedNeighborhoods[neighborhood] and "+" or "-")
-            toggle:SetScript("OnClick", function()
-                collapsedNeighborhoods[neighborhood] = not collapsedNeighborhoods[neighborhood]
-                WoWBnB_RefreshUIList()
+            -- Helper to add cell
+            local xOffsetCell = 0
+            local function AddCell(text, columnName)
+                local fs = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                fs:SetPoint("TOPLEFT", xOffsetCell + 4, -2)
+                fs:SetSize(columnWidths[columnName] - 8, rowHeight)
+                fs:SetJustifyH("LEFT")
+                fs:SetText(text)
+                xOffsetCell = xOffsetCell + columnWidths[columnName]
+                return fs
+            end
+
+            AddCell(h.owner, "Owner")
+            AddCell(h.neighborhood, "Neighborhood")
+            AddCell(h.visits, "Times Visited")
+
+            -- Actions
+            local actionsFrame = CreateFrame("Frame", nil, row)
+            actionsFrame:SetSize(columnWidths.Actions, rowHeight)
+            actionsFrame:SetPoint("TOPLEFT", xOffsetCell, 0)
+
+            local goBtn = CreateFrame("Button", nil, actionsFrame, "UIPanelButtonTemplate")
+            goBtn:SetSize(50, 20)
+            goBtn:SetPoint("LEFT", 0, 0)
+            goBtn:SetText("Go")
+            goBtn:SetScript("OnClick", function() WoWBnB_RunHouseCommand(h.index) end)
+
+            local removeBtn = CreateFrame("Button", nil, actionsFrame, "UIPanelButtonTemplate")
+            removeBtn:SetSize(60, 20)
+            removeBtn:SetPoint("LEFT", 55, 0)
+            removeBtn:SetText("Remove")
+            removeBtn:SetScript("OnClick", function()
+                selectedIndex = h.index
+                confirmFrame:Show()
             end)
 
-            header.text = header:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            header.text:SetPoint("LEFT", 28, 0)
-            header.text:SetText(neighborhood)
-
-            yOffset = yOffset - 28
-
-            if not collapsedNeighborhoods[neighborhood] then
-                for _, h in ipairs(grouped[neighborhood]) do
-                    local row = CreateFrame("Frame", nil, content)
-                    row:SetSize(330, 22)
-                    row:SetPoint("TOPLEFT", 40, yOffset)
-                    AddHoverHighlight(row)
-
-                    row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-                    row.text:SetPoint("LEFT", 0, 0)
-                    row.text:SetText(h.owner)
-
-                    local go = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-                    go:SetSize(50, 20)
-                    go:SetPoint("RIGHT", -60, 0)
-                    go:SetText("Go")
-                    go:SetScript("OnClick", function()
-                        WoWBnB_RunHouseCommand(h.index)
-                    end)
-
-                    local remove = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-                    remove:SetSize(60, 20)
-                    remove:SetPoint("RIGHT", 0, 0)
-                    remove:SetText("Remove")
-                    remove:SetScript("OnClick", function()
-                        selectedIndex = h.index
-                        confirmFrame:Show()
-                    end)
-
-                    yOffset = yOffset - 26
-                end
-            end
+            yOffset = yOffset - rowHeight
         end
 
         content:SetHeight(-yOffset + 20)
+
+        -- Update results text
+        resultsText:SetText(string.format("%d / %d Houses shown", #filteredHouses, #WoWBnB_HousesDB.houses))
+
+        -- Update header arrows for sorted column
+        UpdateHeaderArrows()
     end
 
     ------------------------------------------------------------
-    -- Bottom Button
+    -- Bottom Buttons
     ------------------------------------------------------------
     local saveBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     saveBtn:SetSize(160, 30)
@@ -391,7 +358,6 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     exportBtn:SetText("Debug")
     exportBtn:SetScript("OnClick", function()
         local exportStr = WoWBnB_DebugHouses()
-
         local exportFrame = CreateFrame("Frame", "WoWBnBDebugFrame", frame, "BasicFrameTemplateWithInset")
         exportFrame:SetSize(400, 300)
         exportFrame:SetPoint("CENTER", frame, "CENTER")
@@ -401,7 +367,7 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
 
         exportFrame.title = exportFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         exportFrame.title:SetPoint("TOP", 0, -5)
-        exportFrame.title:SetText("Debug Saved Housed")
+        exportFrame.title:SetText("Debug Saved Houses")
 
         local scroll = CreateFrame("ScrollFrame", nil, exportFrame, "UIPanelScrollFrameTemplate")
         scroll:SetPoint("TOPLEFT", 10, -40)
@@ -424,7 +390,6 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
 
         exportFrame:SetScript("OnShow", function() overlay:Show() end)
         exportFrame:SetScript("OnHide", function() overlay:Hide() end)
-
         exportFrame:Show()
     end)
 
@@ -434,14 +399,8 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     SLASH_WOWBNBCOLLECTION1 = "/wowbnbc"
     SLASH_WOWBNBCOLLECTION2 = "/bnb"
     SlashCmdList["WOWBNBCOLLECTION"] = function()
-                if frame:IsShown() then
-            frame:Hide()
-        else
-            frame:ClearAllPoints()
-            frame:SetPoint("CENTER")
-            frame:Show()
-            WoWBnB_RefreshUIList()
-        end
+        frame:SetShown(not frame:IsShown())
+        WoWBnB_RefreshUIList()
     end
 
     self:UnregisterEvent("ADDON_LOADED")
