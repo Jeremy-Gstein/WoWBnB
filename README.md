@@ -9,6 +9,7 @@
 - Members of same neighborhoods are grouped and collapseable
 - alias:`'/wowbnbc`
 **KNOWN ISSUE:** Currently, Import/Export is not working as intended.
+![/bnb Example - displays favorite house menu in-game.](https://media.forgecdn.net/attachments/1425/550/wowbnb-favorite-house-png.png)
 
 `/wowbnb`:
 - Copy to clipboard displayed in a small text-box highlighted and ready to copy.
