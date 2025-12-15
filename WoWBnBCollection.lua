@@ -23,8 +23,12 @@ function WoWBnB_AddHouse(owner, neighborhood, neighborhoodGUID, houseGUID, plotI
         owner = owner,
         neighborhood = neighborhood,
         neighborhoodGUID = neighborhoodGUID,
-        houseGUID = houseGUID,  -- for display only
+        houseGUID = houseGUID,
         plotID = plotID,
+
+        addedAt = time(),
+        lastVisited = nil,
+        visitCount = 0,
     })
 
     print("Saved house: " .. neighborhood .. " - " .. owner .. " plot " .. plotID)
@@ -50,10 +54,12 @@ function WoWBnB_RunHouseCommand(index)
     print("WoWBnB: Attempting teleport to " .. h.neighborhood .. " plot " .. h.plotID)
 
     local attempts = {}
+
     -- Saved GUID first
     if h.houseGUID then
         table.insert(attempts, h.houseGUID)
     end
+
     -- Brute-force Opaque-1..20 *MAY REQURE TUNING IF <20 Exists
     for i = 1, 20 do
         table.insert(attempts, "Opaque-" .. i)
@@ -62,19 +68,18 @@ function WoWBnB_RunHouseCommand(index)
     local frame = CreateFrame("Frame")
     local attemptIndex = 1
 
-    frame:SetScript("OnUpdate", function(self, elapsed)
+    frame:SetScript("OnUpdate", function(self)
         if attemptIndex > #attempts then
-            -- print("WoWBnB: Done attempting teleport. None worked?")
-            self:Hide()
             self:SetScript("OnUpdate", nil)
+            self:Hide()
             return
         end
 
-        -- Stop if player started casting
         if UnitCastingInfo("player") or UnitChannelInfo("player") then
-            -- print("WoWBnB: Teleport started with " .. attempts[attemptIndex - 1])
-            self:Hide()
+            h.lastVisited = time()
+            h.visitCount = (h.visitCount or 0) + 1
             self:SetScript("OnUpdate", nil)
+            self:Hide()
             return
         end
 
@@ -86,36 +91,30 @@ function WoWBnB_RunHouseCommand(index)
             -- print("WoWBnB: Tried " .. attemptIndex .. " houseGUIDs")
         end
 
+        C_Housing.VisitHouse(h.neighborhoodGUID, attempts[attemptIndex], h.plotID)
         attemptIndex = attemptIndex + 1
     end)
 end
 
-
 ------------------------------------------------------------
--- Export saved houses *DEBUG*
+-- "DEBUG"
 ------------------------------------------------------------
-function WoWBnB_ExportHouses()
+function WoWBnB_DebugHouses()
     local t = {}
     for _, h in ipairs(WoWBnB_HousesDB.houses) do
-        table.insert(t, h.neighborhood .. "|" .. h.owner .. "|" .. h.neighborhoodGUID .. "|" .. h.houseGUID .. "|" .. h.plotID)
+        table.insert(t,
+            h.neighborhood .. "|" ..
+            h.owner .. "|" ..
+            h.neighborhoodGUID .. "|" ..
+            (h.houseGUID or "") .. "|" ..
+            h.plotID
+        )
     end
     return table.concat(t, "\n")
 end
 
 ------------------------------------------------------------
--- Import saved houses *TODO* 
-------------------------------------------------------------
--- function WoWBnB_ImportHouses(text)
---     for line in string.gmatch(text, "[^\n]+") do
---         local n, o, ng, hg, p = strsplit("|", line)
---         if n and o and ng and hg and p then
---             WoWBnB_AddHouse(o, n, ng, hg, tonumber(p))
---         end
---     end
--- end
---
-------------------------------------------------------------
--- Save current house (your own plot)
+-- Save current house
 ------------------------------------------------------------
 function WoWBnB_SaveCurrentHouse()
     local houseInfo = C_Housing.GetCurrentHouseInfo()
@@ -124,12 +123,11 @@ function WoWBnB_SaveCurrentHouse()
         return
     end
 
-    local owner = houseInfo.ownerName or "Unknown"
-    local neighborhood = houseInfo.neighborhoodName or "Unknown"
-    local neighborhoodGUID = houseInfo.neighborhoodGUID
-    local houseGUID = houseInfo.houseGUID
-    local plotID = houseInfo.plotID
-
-    WoWBnB_AddHouse(owner, neighborhood, neighborhoodGUID, houseGUID, plotID)
+    WoWBnB_AddHouse(
+        houseInfo.ownerName or "Unknown",
+        houseInfo.neighborhoodName or "Unknown",
+        houseInfo.neighborhoodGUID,
+        houseInfo.houseGUID,
+        houseInfo.plotID
+    )
 end
-
