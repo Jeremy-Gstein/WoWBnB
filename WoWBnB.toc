@@ -5,6 +5,11 @@
 ## Author: Jeremy-Gstein
 ## SavedVariables: WoWBnB_HousesDB
 
+## X-Credits: Whare
+## X-License: Licensed under the MIT License. See the LICENSE file in the project root for details.
+## X-Website: https://github.com/Jeremy-Gstein/WoWBnB
+## X-Curse-Project-ID: 1401364
+
 WoWBnBCore.lua
 WoWBnBCollection.lua
 WoWBnBCollection_UI.lua
