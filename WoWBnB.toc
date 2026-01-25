@@ -1,4 +1,4 @@
-## Interface: 110207
+## Interface: 120000,120001
 ## Version: 1.0.0
 ## Title: WoW BnB
 ## Notes: Share your house with the world!
